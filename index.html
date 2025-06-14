@@ -30,20 +30,21 @@
   <button onclick="markAttendance()">출석완료</button>
 
   <div class="kakao">
-    <a href="https://pf.kakao.com/_Kxgxcxb/chat" target="_blank">
+    <a href="https://open.kakao.com/me/fitcouple" target="_blank">
       <button>카카오톡 문의하기</button>
     </a>
   </div>
 
   <script>
-    const todayView = new Date();
-    const todayText = `${todayView.getMonth() + 1}월 ${todayView.getDate()}일`;
-    document.getElementById("today").innerText = todayText;
+    // 표시용 날짜
+    const now = new Date();
+    const displayDate = `${now.getMonth() + 1}월 ${now.getDate()}일`;
+    document.getElementById("today").innerText = displayDate;
 
     function markAttendance() {
       const name = document.getElementById("name").value.trim();
-      const current = new Date();  // ✅ 이 시점에서 오늘 날짜 계산
-      const dateStr = current.toISOString().split('T')[0];
+      const today = new Date();
+      const dateStr = today.toISOString().split('T')[0];  // YYYY-MM-DD
 
       if (!name) {
         alert("이름을 입력해주세요.");
@@ -53,12 +54,13 @@
       const key = `${name}_${dateStr}`;
       localStorage.setItem(key, "출석완료");
 
+      // 화면 교체
       document.body.innerHTML = `
         <div style="text-align:center; margin-top:50px;">
           <img src="https://raw.githubusercontent.com/silaskim-0722/hugfitmember-in/0cbe487104764f87d7939df2399a35f9672383c1/hugfit-logo.png" style="width:180px; margin-bottom:30px;">
           <p style="font-size: 20px; color: #175d47;"><strong>${name}</strong> 님의 <strong>${dateStr}</strong> 출석이 완료되었습니다.</p>
           <div class="kakao" style="margin-top: 40px;">
-            <a href="https://pf.kakao.com/_Kxgxcxb/chat" target="_blank">
+            <a href="https://open.kakao.com/me/fitcouple" target="_blank">
               <button style="background-color:#fee500; border:none; padding:10px 20px; font-size:16px; border-radius:5px; color:#000;">
                 카카오톡 문의하기
               </button>
