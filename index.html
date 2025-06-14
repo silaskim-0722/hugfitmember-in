@@ -2,110 +2,84 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>QR 출석 체크</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>HUGFIT 출석 체크</title>
   <style>
-    body {
-      font-family: 'Arial', sans-serif;
-      text-align: center;
-      padding: 20px;
-      margin: 0;
-      background-color: #f7f9fa;
-    }
-    img.logo {
-      width: 60%;
-      max-width: 240px;
-      margin-top: 20px;
-      margin-bottom: 30px;
-    }
-    h2 {
-      color: #2d6a4f;
-      font-size: 20px;
-      margin-bottom: 25px;
-    }
-    label, input, button {
-      font-size: 18px;
-      margin: 10px auto;
-      display: block;
-      width: 90%;
-      max-width: 300px;
-    }
+    body { font-family: Arial; text-align: center; margin: 0; padding: 0; background: #f7f9fa; }
+    .container { padding: 30px; }
+    .logo { width: 200px; margin-top: 40px; }
+    h2 { color: #2d6a4f; margin-top: 20px; }
     input[type="text"] {
-      padding: 10px;
-      border-radius: 8px;
-      border: 1px solid #ccc;
+      font-size: 18px; padding: 10px; width: 80%; max-width: 300px;
+      margin-top: 20px; border: 1px solid #ccc; border-radius: 6px;
     }
     button {
-      background-color: #4a9ad4;
-      color: white;
-      padding: 12px;
-      border: none;
-      border-radius: 10px;
-      cursor: pointer;
-      margin-top: 20px;
+      font-size: 18px; margin-top: 20px; padding: 10px 30px;
+      background-color: #4a9ad4; color: white; border: none; border-radius: 8px;
     }
-    #status {
-      margin-top: 20px;
-      font-weight: bold;
-      color: #2d6a4f;
-      font-size: 17px;
-    }
-    p {
-      font-size: 16px;
-      color: #555;
-    }
+    .message { margin-top: 40px; font-size: 18px; font-weight: bold; color: #2d6a4f; }
     .kakao-button {
-      position: fixed;
-      bottom: 20px;
-      left: 50%;
-      transform: translateX(-50%);
-      background-color: #fee500;
-      color: #000;
-      border: none;
-      padding: 12px 24px;
-      border-radius: 30px;
-      font-size: 16px;
-      box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-      text-decoration: none;
+      position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
+      background-color: #fee500; color: black; padding: 12px 20px;
+      border-radius: 30px; text-decoration: none; font-weight: bold;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.2);
     }
   </style>
 </head>
 <body>
-  <img class="logo" src="https://raw.githubusercontent.com/silaskim-0722/hugfitmember-in/0cbe487104764f87d7939df2399a35f9672383c1/hugfit-logo.png" alt="HUGFIT 로고">
-
-  <div id="formView">
+  <div class="container" id="formView">
+    <img class="logo" src="https://raw.githubusercontent.com/silaskim-0722/hugfitmember-in/0cbe487104764f87d7939df2399a35f9672383c1/hugfit-logo.png" alt="HUGFIT 로고"/>
     <h2>허그핏 출석 체크</h2>
-    <label for="name">이름을 입력하세요:</label>
-    <input type="text" id="name" placeholder="예: 김민정">
-    <p>오늘 날짜: <span id="today"></span></p>
+    <input type="text" id="name" placeholder="이름을 입력하세요"/>
+    <p id="todayDisplay"></p>
     <button onclick="markAttendance()">출석완료</button>
   </div>
 
-  <div id="completeView" style="display:none; margin-top: 80px;">
-    <p id="completeMessage" style="font-size:18px; font-weight:bold;"></p>
+  <div id="completeView" style="display:none;">
+    <img class="logo" src="https://raw.githubusercontent.com/silaskim-0722/hugfitmember-in/0cbe487104764f87d7939df2399a35f9672383c1/hugfit-logo.png" alt="HUGFIT 로고"/>
+    <p class="message" id="completeMessage"></p>
   </div>
 
-  <a href="https://open.kakao.com/me/fitcouple" target="_blank" class="kakao-button">카카오톡 문의하기</a>
+  <a href="https://open.kakao.com/me/fitcouple" class="kakao-button" target="_blank">카카오톡 문의하기</a>
 
   <script>
     const today = new Date();
     const todayStr = today.toISOString().split('T')[0];
-    document.getElementById("today").innerText = todayStr;
+    document.getElementById("todayDisplay").innerText = "오늘 날짜: " + todayStr;
 
     function markAttendance() {
       const name = document.getElementById("name").value.trim();
-      if(!name) {
+      if (!name) {
         alert("이름을 입력해주세요.");
         return;
       }
 
-      const key = `${name}_${todayStr}`;
+      // 로컬 저장 (로컬스토리지)
+      const key = name + "_" + todayStr;
       localStorage.setItem(key, "출석완료");
 
+      // Google Sheets로 전송
+      fetch("https://script.google.com/macros/s/AKfycbxLTWdd05Qc1VF4VjnjgaObWSnQrsHeKtOWHJQAMrN59fgJ5xczlZlALaywwWZJeVW1kg/exec", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: name,
+          regDate: todayStr,
+          lastVisit: todayStr,
+          type: "방문", // 고정 또는 향후 로직 확장 가능
+          status: "출석완료"
+        })
+      }).then(res => res.text()).then(msg => {
+        console.log("Google Sheets 저장 완료:", msg);
+      }).catch(err => {
+        console.error("Google Sheets 저장 실패:", err);
+      });
+
+      // 화면 전환
       document.getElementById("formView").style.display = "none";
       document.getElementById("completeView").style.display = "block";
-      document.getElementById("completeMessage").innerText = `${name} 님의 ${todayStr} 출석이 완료되었습니다.`;
+      document.getElementById("completeMessage").innerText = name + " 님의 " + todayStr + " 출석이 완료되었습니다.";
     }
   </script>
 </body>
