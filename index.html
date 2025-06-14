@@ -23,7 +23,7 @@
   </style>
 </head>
 <body>
-  <img src="https://raw.githubusercontent.com/silaskim-0722/hugfit-admin/main/hugfit-logo.png" alt="HUGFIT 로고">
+  <img src="https://raw.githubusercontent.com/silaskim-0722/hugfitmember-in/0cbe487104764f87d7939df2399a35f9672383c1/hugfit-logo.png" alt="HUGFIT 로고">
   <h2>허그핏 출석 체크</h2>
 
   <input type="text" id="name" placeholder="예: 김민정">
@@ -39,15 +39,12 @@
 
   <script>
     const today = new Date();
-
-    // 날짜 표기: "6월 14일"
+    const dateStr = today.toISOString().split('T')[0];
     const koreanDate = `${today.getMonth() + 1}월 ${today.getDate()}일`;
     document.getElementById("today").innerText = koreanDate;
 
     function markAttendance() {
       const name = document.getElementById("name").value.trim();
-      const dateStr = today.toISOString().split('T')[0]; // 저장용 날짜 (YYYY-MM-DD)
-
       if (!name) {
         alert("이름을 입력해주세요.");
         return;
@@ -56,14 +53,14 @@
       const key = `${name}_${dateStr}`;
       localStorage.setItem(key, "출석완료");
 
-      // 완료 화면 표시
+      // 완료 페이지
       document.body.innerHTML = `
         <div style="text-align:center; margin-top:50px;">
-          <img src="https://raw.githubusercontent.com/silaskim-0722/hugfit-admin/main/hugfit-logo.png" style="width:180px; margin-bottom:30px;">
+          <img src="https://raw.githubusercontent.com/silaskim-0722/hugfitmember-in/0cbe487104764f87d7939df2399a35f9672383c1/hugfit-logo.png" style="width:180px; margin-bottom:30px;">
           <p style="font-size: 20px; color: #175d47;"><strong>${name}</strong> 님의 <strong>${dateStr}</strong> 출석이 완료되었습니다.</p>
-          <div style="margin-top: 40px;">
+          <div class="kakao" style="margin-top: 40px;">
             <a href="https://pf.kakao.com/_Kxgxcxb/chat" target="_blank">
-              <button style="background-color:#fee500; border:none; padding:10px 20px; font-size:16px; border-radius:5px;">
+              <button style="background-color:#fee500; border:none; padding:10px 20px; font-size:16px; border-radius:5px; color:#000;">
                 카카오톡 문의하기
               </button>
             </a>
