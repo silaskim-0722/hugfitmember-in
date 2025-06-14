@@ -2,8 +2,8 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>HUGFIT 출석체크</title>
   <style>
     body { font-family: 'Arial'; text-align: center; background: #f7f7f7; padding: 30px; }
@@ -14,19 +14,17 @@
       color: white; font-size: 16px; border-radius: 5px;
     }
     p { color: #888; margin-top: 0; }
-    .kakao {
-      margin-top: 40px;
-    }
+    .kakao { margin-top: 40px; }
     .kakao button {
       background-color: #fee500; color: #000; font-weight: bold;
     }
   </style>
 </head>
 <body>
-  <img src="https://raw.githubusercontent.com/silaskim-0722/hugfitmember-in/0cbe487104764f87d7939df2399a35f9672383c1/hugfit-logo.png" alt="HUGFIT 로고">
+  <img src="https://raw.githubusercontent.com/silaskim-0722/hugfitmember-in/0cbe487104764f87d7939df2399a35f9672383c1/hugfit-logo.png" alt="HUGFIT 로고" />
   <h2>허그핏 출석 체크</h2>
 
-  <input type="text" id="name" placeholder="예: 김민정">
+  <input type="text" id="name" placeholder="예: 김민정" />
   <p>오늘 날짜: <span id="today"></span></p>
 
   <button onclick="markAttendance()">출석완료</button>
@@ -38,13 +36,15 @@
   </div>
 
   <script>
-    const today = new Date();
-    const dateStr = today.toISOString().split('T')[0];
-    const koreanDate = `${today.getMonth() + 1}월 ${today.getDate()}일`;
+    const now = new Date();
+    const koreanDate = `${now.getMonth() + 1}월 ${now.getDate()}일`;
     document.getElementById("today").innerText = koreanDate;
 
     function markAttendance() {
       const name = document.getElementById("name").value.trim();
+      const today = new Date();  // ⏱ 현재 클릭 시점 기준 날짜
+      const dateStr = today.toISOString().split('T')[0];
+
       if (!name) {
         alert("이름을 입력해주세요.");
         return;
@@ -53,7 +53,6 @@
       const key = `${name}_${dateStr}`;
       localStorage.setItem(key, "출석완료");
 
-      // 완료 페이지
       document.body.innerHTML = `
         <div style="text-align:center; margin-top:50px;">
           <img src="https://raw.githubusercontent.com/silaskim-0722/hugfitmember-in/0cbe487104764f87d7939df2399a35f9672383c1/hugfit-logo.png" style="width:180px; margin-bottom:30px;">
