@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>QR 출석 체크</title>
+  <style>
+    body {
+      font-family: 'Arial', sans-serif;
+      text-align: center;
+      padding: 20px;
+      margin: 0;
+      background-color: #f7f9fa;
+    }
+    img.logo {
+      width: 60%;
+      max-width: 240px;
+      margin-top: 20px;
+      margin-bottom: 30px;
+    }
+    h2 {
+      color: #2d6a4f;
+      font-size: 20px;
+      margin-bottom: 25px;
+    }
+    label, input, button {
+      font-size: 18px;
+      margin: 10px auto;
+      display: block;
+      width: 90%;
+      max-width: 300px;
+    }
+    input[type="text"] {
+      padding: 10px;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+    }
+    button {
+      background-color: #4a9ad4;
+      color: white;
+      padding: 12px;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      margin-top: 20px;
+    }
+    #status {
+      margin-top: 20px;
+      font-weight: bold;
+      color: #2d6a4f;
+      font-size: 17px;
+    }
+    p {
+      font-size: 16px;
+      color: #555;
+    }
+    .kakao-button {
+      position: fixed;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      background-color: #fee500;
+      color: #000;
+      border: none;
+      padding: 12px 24px;
+      border-radius: 30px;
+      font-size: 16px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+      text-decoration: none;
+    }
+  </style>
+</head>
+<body>
+  <img class="logo" src="https://postfiles.pstatic.net/MjAyNTA2MTRfMTkz/MDAxNzQ5ODg3MDM2Mjg2.-PslBkEPl5pRswnwWslBKmSZtwiZYkaADrjKZxfCT4Ag.XNRrUZ_ZwXRXxyczUeW89oGCzUSgULabfQAqmRh5iCog.PNG/%EC%A0%9C%EB%AA%A9%EC%9D%84-%EC%9E%85%EB%A0%A5%ED%95%B4%EC%A3%BC%EC%84%B8%EC%9A%94_-001.png?type=w580" alt="HUGFIT 로고">
+
+  <h2>허그핏 출석 체크</h2>
+
+  <label for="name">이름을 입력하세요:</label>
+  <input type="text" id="name" placeholder="예: 김민정">
+
+  <p>오늘 날짜: <span id="today"></span></p>
+  <button onclick="markAttendance()">출석완료</button>
+
+  <div id="status"></div>
+
+  <a href="https://open.kakao.com/me/fitcouple" target="_blank" class="kakao-button">카카오톡 문의하기</a>
+
+  <script>
+    const today = new Date();
+    document.getElementById("today").innerText = today.toISOString().split('T')[0];
+
+    function markAttendance() {
+      const name = document.getElementById("name").value.trim();
+      const date = today.toISOString().split('T')[0];
+
+      if(!name) {
+        alert("이름을 입력해주세요.");
+        return;
+      }
+
+      const key = `${name}_${date}`;
+      localStorage.setItem(key, "출석완료");
+      document.getElementById("status").innerText = `${name} 님의 ${date} 출석이 완료되었습니다.`;
+      document.getElementById("name").value = "";
+    }
+  </script>
+</body>
+</html>
