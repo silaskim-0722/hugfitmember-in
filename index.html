@@ -72,37 +72,39 @@
   </style>
 </head>
 <body>
-  <img class="logo" src="https://raw.githubusercontent.com/silaskim-0722/hugfitmember-in/0cbe487104764f87d7939df2399a35f9672383c1/hugfit-logo.png" alt="HUGFIT 로고">
+  <div id="formView">
+    <img class="logo" src="https://raw.githubusercontent.com/silaskim-0722/hugfitmember-in/0cbe487104764f87d7939df2399a35f9672383c1/hugfit-logo.png" alt="HUGFIT 로고">
+    <h2>허그핏 출석 체크</h2>
+    <label for="name">이름을 입력하세요:</label>
+    <input type="text" id="name" placeholder="예: 김민정">
+    <p>오늘 날짜: <span id="today"></span></p>
+    <button onclick="markAttendance()">출석완료</button>
+  </div>
 
-  <h2>허그핏 출석 체크</h2>
-
-  <label for="name">이름을 입력하세요:</label>
-  <input type="text" id="name" placeholder="예: 김민정">
-
-  <p>오늘 날짜: <span id="today"></span></p>
-  <button onclick="markAttendance()">출석완료</button>
-
-  <div id="status"></div>
-
-  <a href="https://open.kakao.com/me/fitcouple" target="_blank" class="kakao-button">카카오톡 문의하기</a>
+  <div id="completeView" style="display:none;">
+    <img class="logo" src="https://raw.githubusercontent.com/silaskim-0722/hugfitmember-in/0cbe487104764f87d7939df2399a35f9672383c1/hugfit-logo.png" alt="HUGFIT 로고">
+    <p id="completeMessage" style="font-size:18px; font-weight:bold; margin-top:60px;"></p>
+    <a href="https://open.kakao.com/me/fitcouple" target="_blank" class="kakao-button">카카오톡 문의하기</a>
+  </div>
 
   <script>
     const today = new Date();
-    document.getElementById("today").innerText = today.toISOString().split('T')[0];
+    const todayStr = today.toISOString().split('T')[0];
+    document.getElementById("today").innerText = todayStr;
 
     function markAttendance() {
       const name = document.getElementById("name").value.trim();
-      const date = today.toISOString().split('T')[0];
-
       if(!name) {
         alert("이름을 입력해주세요.");
         return;
       }
 
-      const key = `${name}_${date}`;
+      const key = `${name}_${todayStr}`;
       localStorage.setItem(key, "출석완료");
-      document.getElementById("status").innerText = `${name} 님의 ${date} 출석이 완료되었습니다.`;
-      document.getElementById("name").value = "";
+
+      document.getElementById("formView").style.display = "none";
+      document.getElementById("completeView").style.display = "block";
+      document.getElementById("completeMessage").innerText = `${name} 님의 ${todayStr} 출석이 완료되었습니다.`;
     }
   </script>
 </body>
