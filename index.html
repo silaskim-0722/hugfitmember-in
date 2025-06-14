@@ -2,84 +2,74 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>HUGFIT 출석 체크</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>HUGFIT 출석체크</title>
   <style>
-    body { font-family: Arial; text-align: center; margin: 0; padding: 0; background: #f7f9fa; }
-    .container { padding: 30px; }
-    .logo { width: 200px; margin-top: 40px; }
-    h2 { color: #2d6a4f; margin-top: 20px; }
-    input[type="text"] {
-      font-size: 18px; padding: 10px; width: 80%; max-width: 300px;
-      margin-top: 20px; border: 1px solid #ccc; border-radius: 6px;
-    }
+    body { font-family: 'Arial'; text-align: center; background: #f7f7f7; padding: 30px; }
+    img { max-width: 200px; margin-bottom: 20px; }
+    input { padding: 10px; font-size: 16px; width: 80%; margin-bottom: 10px; }
     button {
-      font-size: 18px; margin-top: 20px; padding: 10px 30px;
-      background-color: #4a9ad4; color: white; border: none; border-radius: 8px;
+      padding: 12px 24px; background-color: #4da3ff; border: none;
+      color: white; font-size: 16px; border-radius: 5px;
     }
-    .message { margin-top: 40px; font-size: 18px; font-weight: bold; color: #2d6a4f; }
-    .kakao-button {
-      position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
-      background-color: #fee500; color: black; padding: 12px 20px;
-      border-radius: 30px; text-decoration: none; font-weight: bold;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+    p { color: #888; margin-top: 0; }
+    .kakao {
+      margin-top: 40px;
+    }
+    .kakao button {
+      background-color: #fee500; color: #000; font-weight: bold;
     }
   </style>
 </head>
 <body>
-  <div class="container" id="formView">
-    <img class="logo" src="https://raw.githubusercontent.com/silaskim-0722/hugfitmember-in/0cbe487104764f87d7939df2399a35f9672383c1/hugfit-logo.png" alt="HUGFIT 로고"/>
-    <h2>허그핏 출석 체크</h2>
-    <input type="text" id="name" placeholder="이름을 입력하세요"/>
-    <p id="todayDisplay"></p>
-    <button onclick="markAttendance()">출석완료</button>
-  </div>
+  <img src="https://raw.githubusercontent.com/silaskim-0722/hugfit-admin/main/hugfit-logo.png" alt="HUGFIT 로고">
+  <h2>허그핏 출석 체크</h2>
 
-  <div id="completeView" style="display:none;">
-    <img class="logo" src="https://raw.githubusercontent.com/silaskim-0722/hugfitmember-in/0cbe487104764f87d7939df2399a35f9672383c1/hugfit-logo.png" alt="HUGFIT 로고"/>
-    <p class="message" id="completeMessage"></p>
-  </div>
+  <input type="text" id="name" placeholder="예: 김민정">
+  <p>오늘 날짜: <span id="today"></span></p>
 
-  <a href="https://open.kakao.com/me/fitcouple" class="kakao-button" target="_blank">카카오톡 문의하기</a>
+  <button onclick="markAttendance()">출석완료</button>
+
+  <div class="kakao">
+    <a href="https://pf.kakao.com/_Kxgxcxb/chat" target="_blank">
+      <button>카카오톡 문의하기</button>
+    </a>
+  </div>
 
   <script>
     const today = new Date();
-    const todayStr = today.toISOString().split('T')[0];
-    document.getElementById("todayDisplay").innerText = "오늘 날짜: " + todayStr;
+
+    // 날짜 표기: "6월 14일"
+    const koreanDate = `${today.getMonth() + 1}월 ${today.getDate()}일`;
+    document.getElementById("today").innerText = koreanDate;
 
     function markAttendance() {
       const name = document.getElementById("name").value.trim();
+      const dateStr = today.toISOString().split('T')[0]; // 저장용 날짜 (YYYY-MM-DD)
+
       if (!name) {
         alert("이름을 입력해주세요.");
         return;
       }
 
-      // 로컬 저장 (로컬스토리지)
-      const key = name + "_" + todayStr;
+      const key = `${name}_${dateStr}`;
       localStorage.setItem(key, "출석완료");
 
-      // Google Sheets로 전송
-      fetch("https://script.google.com/macros/s/AKfycbxLTWdd05Qc1VF4VjnjgaObWSnQrsHeKtOWHJQAMrN59fgJ5xczlZlALaywwWZJeVW1kg/exec", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          name: name,
-          regDate: todayStr,
-          lastVisit: todayStr,
-          type: "방문", // 고정 또는 향후 로직 확장 가능
-          status: "출석완료"
-        })
-      }).then(res => res.text()).then(msg => {
-        console.log("Google Sheets 저장 완료:", msg);
-      }).catch(err => {
-        console.error("Google Sheets 저장 실패:", err);
-      });
-
-      // 화면 전환
-      document.getElementById("formView").style.display = "none";
-      document.getElementById("completeView").style.display = "block";
-      document.getElementById("completeMessage").innerText = name + " 님의 " + todayStr + " 출석이 완료되었습니다.";
+      // 완료 화면 표시
+      document.body.innerHTML = `
+        <div style="text-align:center; margin-top:50px;">
+          <img src="https://raw.githubusercontent.com/silaskim-0722/hugfit-admin/main/hugfit-logo.png" style="width:180px; margin-bottom:30px;">
+          <p style="font-size: 20px; color: #175d47;"><strong>${name}</strong> 님의 <strong>${dateStr}</strong> 출석이 완료되었습니다.</p>
+          <div style="margin-top: 40px;">
+            <a href="https://pf.kakao.com/_Kxgxcxb/chat" target="_blank">
+              <button style="background-color:#fee500; border:none; padding:10px 20px; font-size:16px; border-radius:5px;">
+                카카오톡 문의하기
+              </button>
+            </a>
+          </div>
+        </div>
+      `;
     }
   </script>
 </body>
