@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>HUGFIT 출석체크</title>
+  <style>
+    body { font-family: 'Arial'; text-align: center; background: #f7f7f7; padding: 30px; }
+    img { max-width: 200px; margin-bottom: 20px; }
+    input { padding: 10px; font-size: 16px; width: 80%; margin-bottom: 10px; border: 2px solid #ddd; border-radius: 5px; }
+    button {
+      padding: 12px 24px; background-color: #4da3ff; border: none;
+      color: white; font-size: 16px; border-radius: 5px; cursor: pointer;
+    }
+    button:hover { background-color: #3d8bdb; }
+    p { color: #888; margin-top: 0; }
+    .kakao { margin-top: 40px; }
+    .kakao button {
+      background-color: #fee500; color: #000; font-weight: bold;
+    }
+    .kakao button:hover { background-color: #e6cf00; }
+    .status { 
+      padding: 10px; 
+      margin: 20px 0; 
+      border-radius: 5px; 
+      font-weight: bold;
+    }
+    .success { background: #d4edda; color: #155724; }
+    .error { background: #f8d7da; color: #721c24; }
+    .warning { background: #fff3cd; color: #856404; }
+    .info { background: #d1ecf1; color: #0c5460; }
+    .member-info {
+      background: #f8f9fa;
+      border: 1px solid #dee2e6;
+      border-radius: 8px;
+      padding: 20px;
+      margin: 20px 0;
+      text-align: left;
+    }
+    .member-info h3 {
+      margin-top: 0;
+      color: #495057;
+      text-align: center;
+    }
+    .info-row {
+      display: flex;
+      justify-content: space-between;
+      margin: 10px 0;
+      padding: 8px 0;
+      border-bottom: 1px solid #eee;
+    }
+    .info-row:last-child {
+      border-bottom: none;
+    }
+    .info-label {
+      font-weight: bold;
+      color: #6c757d;
+    }
+    .info-value {
+      color: #495057;
+    }
+  </style>
+</head>
+<body>
+  <img src="https://raw.githubusercontent.com/silaskim-0722/hugfitmember-in/0cbe487104764f87d7939df2399a35f9672383c1/hugfit-logo.png" alt="HUGFIT 로고" />
+  <h2>허그핏 출석 체크</h2>
+
+  <input type="text" id="name" placeholder="예: 김민정" />
+  <p>오늘 날짜: <span id="today"></span></p>
+
+  <button onclick="markAttendance()">출석완료</button>
+
+  <div id="statusMessage" style="display: none;"></div>
+  <div id="memberInfo" style="display: none;"></div>
+
+  <div class="kakao">
+    <a href="https://open.kakao.com/me/fitcouple" target="_blank">
+      <button>카카오톡 문의하기</button>
+    </a>
+  </div>
+
+  <script>
+    // 표시용 날짜
+    const now = new Date();
+    const displayDate = `${now.getMonth() + 1}월 ${now.getDate()}일`;
+    document.getElementById("today").innerText = displayDate;
+
+    // 상태 메시지 표시 함수
+    function showStatus(message, type = 'info') {
+      const statusDiv = document.getElementById('statusMessage');
+      statusDiv.textContent = message;
+      statusDiv.className = `status ${type}`;
+      statusDiv.style.display = 'block';
+      
+      // 5초 후 자동 숨김
+      setTimeout(() => {
+        statusDiv.style.display = 'none';
+      }, 5000);
+    }
+
+    // 회원 정보 표시 함수
+    function showMemberInfo(memberData) {
+      const infoDiv = document.getElementById('memberInfo');
+      
+      let statusText = '';
+      let statusClass = '';
+      
+      if (memberData.type === '쿠폰') {
+        statusText = memberData.count > 0 ? `${memberData.count}회 남음` : '사용완료';
+        statusClass = memberData.count > 0 ? 'success' : 'error';
+      } else {
+        const today = new Date();
+        const expireDate = new Date(memberData.expire);
+        const daysLeft = Math.ceil((expireDate - today) / (1000 * 60 * 60 * 24));
+        
+        if (daysLeft > 0) {
+          statusText = `${daysLeft}일 남음`;
+          statusClass = daysLeft > 7 ? 'success' : 'warning';
+        } else {
+          statusText = '기간만료';
+          statusClass = 'error';
+        }
+      }
+      
+      infoDiv.innerHTML = `
+        <div class="member-info">
+          <h3>${memberData.name} 님의 이용권 정보</h3>
+          <div class="info-row">
+            <span class="info-label">등록일:</span>
+            <span class="info-value">${memberData.regDate}</span>
+          </div>
+          <div class="info-row">
+            <span class="info-label">이용 유형:</span>
+            <span class="info-value">${memberData.type}</span>
+          </div>
+          <div class="info-row">
+            <span class="info-label">남은 횟수/기간:</span>
+            <span class="info-value">${memberData.type === '쿠폰' ? `${memberData.count}회` : `~ ${memberData.expire}`}</span>
+          </div>
+          <div class="info-row">
+            <span class="info-label">최근 방문:</span>
+            <span class="info-value">${memberData.lastVisit || '없음'}</span>
+          </div>
+          <div class="info-row">
+            <span class="info-label">상태:</span>
+            <span class="info-value">
+              <span class="status ${statusClass}" style="display: inline-block; padding: 4px 8px; font-size: 12px;">
+                ${statusText}
+              </span>
+            </span>
+          </div>
+        </div>
+      `;
+      infoDiv.style.display = 'block';
+    }
+
+    function markAttendance() {
+      const name = document.getElementById("name").value.trim();
+      const today = new Date();
+      const dateStr = today.toISOString().split('T')[0];  // YYYY-MM-DD
+
+      if (!name) {
+        showStatus("이름을 입력해주세요.", "warning");
+        return;
+      }
+
+      // 관리자 시스템에서 회원 정보 확인
+      const memberKey = `member_${name}`;
+      const memberData = localStorage.getItem(memberKey);
+      
+      if (!memberData) {
+        showStatus("등록되지 않은 회원입니다. 관리자에게 문의해주세요.", "error");
+        return;
+      }
+
+      const memberInfo = JSON.parse(memberData);
+      
+      // 이용 가능 여부 확인
+      if (memberInfo.type === '쿠폰' && memberInfo.count <= 0) {
+        showStatus("남은 이용 횟수가 없습니다. 관리자에게 문의해주세요.", "error");
+        showMemberInfo(memberInfo);
+        return;
+      }
+      
+      if (memberInfo.type === '기간') {
+        const todayDate = new Date();
+        const expireDate = new Date(memberInfo.expire);
+        if (todayDate > expireDate) {
+          showStatus("이용 기간이 만료되었습니다. 관리자에게 문의해주세요.", "error");
+          showMemberInfo(memberInfo);
+          return;
+        }
+      }
+
+      // 당일 중복 출석 확인
+      if (memberInfo.lastVisit === dateStr) {
+        showStatus("오늘 이미 출석 처리되었습니다.", "warning");
+        showMemberInfo(memberInfo);
+        return;
+      }
+
+      // 출석 처리
+      memberInfo.lastVisit = dateStr;
+      
+      if (memberInfo.type === '쿠폰') {
+        if (memberInfo.count > 0) {
+          memberInfo.count--;
+        }
+      }
+
+      // 관리자 시스템에 업데이트
+      localStorage.setItem(memberKey, JSON.stringify(memberInfo));
+
+      // 개별 출석 기록도 저장 (기존 방식 유지)
+      const attendanceKey = `${name}_${dateStr}`;
+      localStorage.setItem(attendanceKey, "출석완료");
+
+      // 성공 메시지와 함께 회원 정보 표시
+      showMemberInfo(memberInfo);
+      showStatus(`${name} 님의 출석이 완료되었습니다!`, "success");
+
+      // 5초 후 완료 화면으로 전환
+      setTimeout(() => {
+        showCompletionScreen(name, dateStr, memberInfo);
+      }, 3000);
+    }
+
+    function showCompletionScreen(name, dateStr, memberInfo) {
+      // 남은 횟수/기간 정보
+      let remainingInfo = '';
+      if (memberInfo.type === '쿠폰') {
+        remainingInfo = memberInfo.count > 0 ? 
+          `<p style="color: #28a745; font-size: 18px;">🎫 남은 횟수: <strong>${memberInfo.count}회</strong></p>` :
+          `<p style="color: #dc3545; font-size: 18px;">⚠️ 이용권이 모두 사용되었습니다.</p>`;
+      } else {
+        const today = new Date();
+        const expireDate = new Date(memberInfo.expire);
+        const daysLeft = Math.ceil((expireDate - today) / (1000 * 60 * 60 * 24));
+        
+        if (daysLeft > 0) {
+          remainingInfo = `<p style="color: #28a745; font-size: 18px;">📅 남은 기간: <strong>${daysLeft}일</strong></p>`;
+        } else {
+          remainingInfo = `<p style="color: #dc3545; font-size: 18px;">⚠️ 이용 기간이 만료되었습니다.</p>`;
+        }
+      }
+
+      document.body.innerHTML = `
+        <div style="text-align:center; margin-top:50px;">
+          <img src="https://raw.githubusercontent.com/silaskim-0722/hugfitmember-in/0cbe487104764f87d7939df2399a35f9672383c1/hugfit-logo.png" style="width:180px; margin-bottom:30px;">
+          <h2 style="color: #175d47;">출석 완료! 🎉</h2>
+          <p style="font-size: 20px; color: #175d47;">
+            <strong>${name}</strong> 님의 <strong>${dateStr}</strong> 출석이 완료되었습니다.
+          </p>
+          ${remainingInfo}
+          <div style="margin: 30px 0;">
+            <button onclick="location.reload()" style="background-color: #6c757d; border: none; padding: 10px 20px; font-size: 16px; border-radius: 5px; color: white; margin-right: 10px; cursor: pointer;">
+              다시 출석하기
+            </button>
+          </div>
+          <div class="kakao" style="margin-top: 40px;">
+            <a href="https://open.kakao.com/me/fitcouple" target="_blank">
+              <button style="background-color:#fee500; border:none; padding:10px 20px; font-size:16px; border-radius:5px; color:#000; cursor: pointer;">
+                카카오톡 문의하기
+              </button>
+            </a>
+          </div>
+        </div>
+      `;
+    }
+
+    // Enter 키로 출석 처리
+    document.getElementById('name').addEventListener('keypress', function(e) {
+      if (e.key === 'Enter') {
+        markAttendance();
+      }
+    });
+
+    // 페이지 로드 시 포커스
+    window.onload = function() {
+      document.getElementById('name').focus();
+    };
+  </script>
+</body>
+</html>
